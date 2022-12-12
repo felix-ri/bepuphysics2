@@ -53,7 +53,7 @@ namespace Demos
 
         public abstract void Initialize(ContentArchive content, Camera camera);
 
-        public const float TimestepDuration = 1 / 60f;
+        public const float TimestepDuration = 1 / 144f;
         public virtual void Update(Window window, Camera camera, Input input, float dt)
         {
             //In the demos, we use one time step per frame. We don't bother modifying the physics time step duration for different monitors so different refresh rates

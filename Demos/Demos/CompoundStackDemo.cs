@@ -21,11 +21,11 @@ namespace Demos.Demos
     {
         public override void Initialize(ContentArchive content, Camera camera)
         {
-            camera.Position = new Vector3(-2, 10, -10);
-            camera.Yaw = MathHelper.Pi * 3f / 4;
+            camera.Position = new Vector3(0, 2, 6);
+            //camera.Yaw = MathHelper.Pi * 3f / 4;
             camera.Pitch = MathHelper.Pi * 0.2f;
 
-            Simulation = Simulation.Create(BufferPool, new DemoNarrowPhaseCallbacks(new SpringSettings(60, 1)), new DemoPoseIntegratorCallbacks(new Vector3(0, -10, 0)), new SolveDescription(16, 2));
+            Simulation = Simulation.Create(BufferPool, new DemoNarrowPhaseCallbacks(new SpringSettings(60, 1f)), new DemoPoseIntegratorCallbacks(new Vector3(0, -10, 0)), new SolveDescription(16, 1));
 
 
             TypedIndex compound;
@@ -42,10 +42,14 @@ namespace Demos.Demos
                 compoundBuilder.Add(new Box(0.04f,0.89f,0.02f),new Vector3(1.6f,-0.09f,0.05f),1);
 
                 compoundBuilder.BuildDynamicCompound(out var children,out inertia, out var center);
+                //make it 1 kg.
+                inertia.InverseInertiaTensor *= 1 / inertia.InverseMass;
+                inertia.InverseMass = 1;
+
                 compound = Simulation.Shapes.Add(new Compound(children));
             }
 
-            for (var i = 0; i < 10; i++) Simulation.Bodies.Add(BodyDescription.CreateDynamic(new RigidPose(new Vector3(0, .5f * i + .5f, 0), Quaternion.CreateFromYawPitchRoll(0, float.Pi / 2, 0)), inertia, compound, 0.01f));
+            for (var i = 0; i < 10; i++) Simulation.Bodies.Add(BodyDescription.CreateDynamic(new RigidPose(new Vector3(0, .5f * i + .5f, 0), Quaternion.CreateFromYawPitchRoll(0, float.Pi / 2, 0)), inertia, new CollidableDescription(compound,ContinuousDetection.Continuous()), 0.01f));
 
 
             Simulation.Statics.Add(new StaticDescription(new Vector3(0, -0.5f, 0), Simulation.Shapes.Add(new Box(500, 1, 500))));
@@ -54,7 +58,7 @@ namespace Demos.Demos
             bulletDescription = BodyDescription.CreateDynamic(new Vector3(), bulletShape.ComputeInertia(.1f), Simulation.Shapes.Add(bulletShape), 0.01f);
 
             var shootiePatootieShape = new Sphere(3f);
-            shootiePatootieDescription = BodyDescription.CreateDynamic(new Vector3(), shootiePatootieShape.ComputeInertia(100), new(Simulation.Shapes.Add(shootiePatootieShape), 0.1f), 0.01f);
+            shootiePatootieDescription = BodyDescription.CreateDynamic(new Vector3(), shootiePatootieShape.ComputeInertia(100), new(Simulation.Shapes.Add(shootiePatootieShape), 0.1f,float.MaxValue), 0.01f);
         }
 
         BodyDescription bulletDescription;
